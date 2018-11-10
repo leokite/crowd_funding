@@ -50,7 +50,7 @@ contract CrowdFunding {
     if(totalAmount >= goalAmount) {
       status = "Campaign Succeeded";
       ended = true;
-      if(!owner.send(this.balance)) {
+      if(!owner.send(address(this).balance)) {
         revert("Failed to send the balance to the owner");
       }
     } else {
