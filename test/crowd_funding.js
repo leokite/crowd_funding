@@ -55,9 +55,9 @@ contract('CrowdFunding', ([owner, investor1, investor2]) => {
     await increaseTime(duration.hours(1));
     await instance.checkGoalReached({ from: owner });
     const post = web3.eth.getBalance(investor1);
+    post.minus(pre).plus(gasCost).should.be.bignumber.equal(0);
     (await instance.status()).should.be.equal("Campaign Failed");
     (await instance.ended()).should.be.true;
-    post.minus(pre).plus(gasCost).should.be.bignumber.equal(0);
   });
 
 });
