@@ -21,12 +21,30 @@ contract('CrowdFunding', ([owner, investor1, investor2]) => {
         DURATION, GOAL_AMOUNT, { from: owner })
   });
 
-  it('should be Funding state in the initial state', async () => {
+  it('should be Funding state and not end the campaign initially', async () => {
     (await instance.status()).should.equal('Funding');
     (await instance.ended()).should.be.false;
   });
 
-  it('should fund from investor', async () => {
+  it('should fail checkGoalReaced is called before campaign end', async() => {
+    instance.checkGoalReached({ from: owner }).should.be.rejectedWith('revert');
+  });
+
+  it('should fail checkGoalReaced is called by other than owner', async() => {
+    let amount1 = new web3.BigNumber(web3.toWei(0.1, 'ether'));
+    await instance.fund({ from: investor1, value: amount1 });
+    instance.checkGoalReached({ from: investor1 }).should.be.rejectedWith('revert');
+  });
+
+  it('should fail to fund after the campaign end', async () => {
+    let amount1 = new web3.BigNumber(web3.toWei(1, 'ether'));
+    await instance.fund({ from: investor1, value: amount1 });
+    await increaseTime(duration.hours(1));
+    await instance.checkGoalReached({ from: owner });
+    instance.fund({ from: investor1, value: amount1 }).should.be.rejectedWith('revert');
+  });
+
+  it('should fund is called by investors', async () => {
     let amount1 = new web3.BigNumber(web3.toWei(0.1, 'ether'));
     let amount2 = new web3.BigNumber(web3.toWei(0.1, 'ether'));
     await instance.fund({ from: investor1, value: amount1 });
@@ -37,7 +55,7 @@ contract('CrowdFunding', ([owner, investor1, investor2]) => {
     (await web3.eth.getBalance(instance.address)).should.bignumber.equal(amount1.plus(amount2));
   });
 
-  it('should success the campaign if totalAmount is reached by deadline', async () => {
+  it('should success the campaign if totalAmount is reached by deadline, then send balance to owner', async () => {
     let amount1 = new web3.BigNumber(web3.toWei(1, 'ether'));
     await instance.fund({ from: investor1, value: amount1 });
     await increaseTime(duration.hours(1));
@@ -47,7 +65,7 @@ contract('CrowdFunding', ([owner, investor1, investor2]) => {
     (await web3.eth.getBalance(instance.address)).should.bignumber.equal(0);
   });
 
-  it('should fail the campaign if totalAmount is NOT reached by deadline', async () => {
+  it('should fail the campaign if totalAmount is NOT reached by deadline, then refund balance to investors', async () => {
     const amount1 = new web3.BigNumber(web3.toWei(0.1, 'ether'));
     const pre = web3.eth.getBalance(investor1);
     const res = await instance.fund({ from: investor1, value: amount1 });
@@ -59,6 +77,7 @@ contract('CrowdFunding', ([owner, investor1, investor2]) => {
     (await instance.status()).should.be.equal("Campaign Failed");
     (await instance.ended()).should.be.true;
   });
+
 
 });
 

@@ -17,6 +17,7 @@ contract CrowdFunding {
   mapping (uint => Investor) public investors;
 
   event Fund(address indexed investor, uint amount);
+  event CheckGoalReached(address indexed owner);
 
   modifier onlyOwner () {
     require(msg.sender == owner);
@@ -69,6 +70,7 @@ contract CrowdFunding {
         i++;
       }
     }
+    emit CheckGoalReached(msg.sender);
   }
 
   function kill() public onlyOwner {
