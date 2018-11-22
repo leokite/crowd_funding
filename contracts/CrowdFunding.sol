@@ -26,13 +26,10 @@ contract CrowdFunding {
 
   constructor(uint _duration, uint _goalAmount) public {
     owner = msg.sender;
-
     deadline = now + _duration;
-
     goalAmount = _goalAmount;
     status = "Funding";
     ended = false;
-
     numInvestors = 0;
     totalAmount = 0;
   }
