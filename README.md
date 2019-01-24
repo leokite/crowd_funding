@@ -1,10 +1,11 @@
 Crowdfunding
 ---
-This is a experimental crowdfunding application using Ethereum.
+This is an experimental crowdfunding application using Ethereum.
 
 # Dependency
 
 * Ethereum
+* Truffle
 * Ganache
 * npm
 
